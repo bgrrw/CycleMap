@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cycle Map</title>
+    <title>Leaflet Map</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -27,46 +27,51 @@
         }).addTo(map);
 
         // Function to load GeoJSON
-        function loadGeoJSON(url, sheetData) {
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
+		function loadGeoJSON(url, sheetData) {
+			fetch(url)
+				.then(response => response.json())
+				.then(data => {
+					console.log('Loaded GeoJSON:', data); // Debug: Print the fetched GeoJSON data
+					if (!data || !data.features || !Array.isArray(data.features)) {
+						throw new Error('Invalid GeoJSON structure');
+					}
 
-                    // Join GeoJSON features with Google Sheet data
-                    data.features.forEach(feature => {
-                        const trailName = feature.properties.name; // Use "Name" from GeoJSON
-                        const match = sheetData.find(row => row.Trail === trailName);
-                        if (match) {
-                            feature.properties.condition = match.Condition; // Add condition
-                            feature.properties.comments = match.Comments; // Add comments
-                        }
-                    });
+					data.features.forEach(feature => {
+						const trailName = feature.properties.Name; // Use "Name" from GeoJSON
+						console.log('Processing feature:', trailName); // Debug: Print each trail name
+						const match = sheetData.find(row => row.Trail === trailName);
+						if (match) {
+							console.log('Match found:', match); // Debug: Print the matching sheet row
+							feature.properties.condition = match.Condition;
+							feature.properties.comments = match.Comments;
+						} else {
+							console.warn(`No match found for trail: ${trailName}`); // Debug: Warn about unmatched trails
+						}
+					});
 
-                    // Add the GeoJSON layer to the map
-                    L.geoJSON(data, {
-                        style: function(feature) {
-                            // Style based on the condition value
-                            const condition = feature.properties.condition;
-                            return {
-                                color: condition == 5 ? "green" :
-                                       condition == 3 ? "yellow" :
-                                       condition == 2 ? "red" : "gray",
-                                weight: 4
-                            };
-                        },
-                        onEachFeature: function(feature, layer) {
-                            // Add a popup with trail details
-                            const popupContent = `
-                                <strong>${feature.properties.Name}</strong><br>
-                                Condition: ${feature.properties.condition || 'Unknown'}<br>
-                                Comments: ${feature.properties.comments || 'None'}
-                            `;
-                            layer.bindPopup(popupContent);
-                        }
-                    }).addTo(map);
-                })
-                .catch(error => console.error('Error loading GeoJSON:', error));
-        }
+					L.geoJSON(data, {
+						style: function(feature) {
+							const condition = feature.properties.condition;
+							return {
+								color: condition == 5 ? "green" :
+									   condition == 3 ? "yellow" :
+									   condition == 2 ? "red" : "gray",
+								weight: 4
+							};
+						},
+						onEachFeature: function(feature, layer) {
+							const popupContent = `
+								<strong>${feature.properties.Name}</strong><br>
+								Condition: ${feature.properties.condition || 'Unknown'}<br>
+								Comments: ${feature.properties.comments || 'None'}
+							`;
+							layer.bindPopup(popupContent);
+						}
+					}).addTo(map);
+				})
+				.catch(error => console.error('Error loading GeoJSON:', error));
+		}
+
 
         // Load the Google Sheet and process it
         function loadGoogleSheet() {
