@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Leaflet Map</title>
+    <title>Cycle Map</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -31,17 +31,29 @@
 			fetch(url)
 				.then(response => response.json())
 				.then(data => {
-					console.log('Loaded GeoJSON:', data); // Debug: Print the fetched GeoJSON data
+					// Debug: Log the full GeoJSON data
+					console.log('Loaded GeoJSON:', data);
+
+					// Validate GeoJSON structure
 					if (!data || !data.features || !Array.isArray(data.features)) {
+						console.error('Invalid GeoJSON structure:', data);
 						throw new Error('Invalid GeoJSON structure');
 					}
 
+					// Process each feature in the GeoJSON
 					data.features.forEach(feature => {
-						const trailName = feature.properties.Name; // Use "Name" from GeoJSON
-						console.log('Processing feature:', trailName); // Debug: Print each trail name
+						if (!feature.properties || !feature.properties.Name) {
+							console.warn('Feature missing "Name" property:', feature);
+							return; // Skip this feature
+						}
+
+						const trailName = feature.properties.Name;
+						console.log('Processing feature:', trailName); // Debug: Log the trail name
+
+						// Find matching row in the sheet data
 						const match = sheetData.find(row => row.Trail === trailName);
 						if (match) {
-							console.log('Match found:', match); // Debug: Print the matching sheet row
+							console.log('Match found for trail:', trailName, match); // Debug: Log the matching row
 							feature.properties.condition = match.Condition;
 							feature.properties.comments = match.Comments;
 						} else {
@@ -49,6 +61,7 @@
 						}
 					});
 
+					// Add the GeoJSON layer to the map
 					L.geoJSON(data, {
 						style: function(feature) {
 							const condition = feature.properties.condition;
@@ -71,6 +84,7 @@
 				})
 				.catch(error => console.error('Error loading GeoJSON:', error));
 		}
+
 
 
         // Load the Google Sheet and process it
