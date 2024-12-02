@@ -15,6 +15,7 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
         // Initialize the map
         const map = L.map('map').setView([60.7212, -135.0568], 13); // Centered on Whitehorse, adjust as needed
@@ -26,19 +27,58 @@
         }).addTo(map);
 
         // Function to load GeoJSON
-        function loadGeoJSON(url) {
+        function loadGeoJSON(url, sheetData) {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    L.geoJSON(data).addTo(map);
+                    // Join GeoJSON features with Google Sheet data
+                    data.features.forEach(feature => {
+                        const name = feature.properties.name;
+                        const match = sheetData.find(row => row.name === name);
+                        if (match) {
+                            feature.properties.condition = match.condition; // Add the condition
+                        }
+                    });
+
+                    // Add the GeoJSON layer to the map
+                    L.geoJSON(data, {
+                        style: function(feature) {
+                            // Style based on the condition attribute
+                            return {
+                                color: feature.properties.condition === "Good" ? "green" :
+                                       feature.properties.condition === "Fair" ? "yellow" :
+                                       "red"
+                            };
+                        },
+                        onEachFeature: function(feature, layer) {
+                            // Add a popup with the name and condition
+                            const popupContent = `Name: ${feature.properties.name}<br>Condition: ${feature.properties.condition || 'Unknown'}`;
+                            layer.bindPopup(popupContent);
+                        }
+                    }).addTo(map);
                 })
                 .catch(error => console.error('Error loading GeoJSON:', error));
         }
 
-        // Load GeoJSON files
-        loadGeoJSON('ChilkootWay.geojson');
-        loadGeoJSON('LowerEscarpment.geojson');
-        loadGeoJSON('Riverfront.geojson');
+        // Load the Google Sheet and process it
+        function loadGoogleSheet() {
+            const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/pub?output=csv';
+            fetch(sheetURL)
+                .then(response => response.text())
+                .then(csv => {
+                    // Parse the CSV into JSON
+                    const sheetData = Papa.parse(csv, { header: true }).data;
+
+                    // Load GeoJSON files and join them with sheet data
+                    loadGeoJSON('ChilkootWay.geojson', sheetData);
+                    loadGeoJSON('LowerEscarpment.geojson', sheetData);
+                    loadGeoJSON('Riverfront.geojson', sheetData);
+                })
+                .catch(error => console.error('Error loading Google Sheet:', error));
+        }
+
+        // Load the sheet and initialize the map
+        loadGoogleSheet();
     </script>
 </body>
 </html>
