@@ -33,7 +33,7 @@
         }
 
         // Fetch Google Sheets data using the published URL
-        $.getJSON('https://spreadsheets.google.com/feeds/list/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/od6/public/values?alt=json', function(data) {
+        $.getJSON('https://docs.google.com/spreadsheets/d/e/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/pubhtml?gid=0&single=true', function(data) {
             // Map the Google Sheet rows into a key-value format for easy lookup
             var trailConditions = {};
             data.feed.entry.forEach(function(entry) {
