@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Leaflet Map</title>
+    <title>Cycle Map</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -31,14 +31,10 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    // Validate GeoJSON structure
-                    if (!data || !data.features || !Array.isArray(data.features)) {
-                        throw new Error('Invalid GeoJSON structure');
-                    }
 
                     // Join GeoJSON features with Google Sheet data
                     data.features.forEach(feature => {
-                        const trailName = feature.properties.Name; // Use "Name" from GeoJSON
+                        const trailName = feature.properties.name; // Use "Name" from GeoJSON
                         const match = sheetData.find(row => row.Trail === trailName);
                         if (match) {
                             feature.properties.condition = match.Condition; // Add condition
