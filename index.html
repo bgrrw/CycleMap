@@ -1,114 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Leaflet Map</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        #map {
-            height: 100vh; /* Full-screen map */
-        }
-    </style>
+    <title>GeoJSON with Trail Conditions</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div id="map"></div>
+    <div id="map" style="height: 600px;"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Initialize the map
-        const map = L.map('map').setView([60.7212, -135.0568], 13); // Centered on Whitehorse, adjust as needed
+        var map = L.map('map').setView([60.731, -135.068], 13);  // Adjust view to your region
 
-        // Add OpenStreetMap basemap
+        // Set the OpenStreetMap basemap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Function to load Google Sheets data (replace URL with your Google Sheets link)
-        function loadGoogleSheetData() {
-            return fetch('https://spreadsheets.google.com/feeds/list/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/od6/public/values?alt=json')
-                .then(response => response.json())
-                .then(data => {
-                    const rows = data.feed.entry.map(entry => ({
-                        Trail: entry.gsx$trail.$t,
-                        Condition: entry.gsx$condition.$t,
-                        Comments: entry.gsx$comments.$t
-                    }));
-                    return rows;
-                })
-                .catch(error => console.error('Error loading Google Sheets data:', error));
+        // Function to assign color based on condition value
+        function getColor(condition) {
+            switch (condition) {
+                case 1: return 'red';
+                case 2: return 'orange';
+                case 3: return 'yellow';
+                case 4: return 'green';
+                case 5: return 'blue';
+                default: return 'grey';
+            }
         }
 
-        // Function to load GeoJSON and join it with Google Sheets data
-        function loadGeoJSON(url, sheetData) {
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Loaded GeoJSON:', data);
+        // Fetch Google Sheets data using the published URL
+        $.getJSON('https://spreadsheets.google.com/feeds/list/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/od6/public/values?alt=json', function(data) {
+            // Map the Google Sheet rows into a key-value format for easy lookup
+            var trailConditions = {};
+            data.feed.entry.forEach(function(entry) {
+                var trailName = entry.gsx$trail.$t.trim(); // Extract trail name
+                var condition = parseInt(entry.gsx$condition.$t.trim()); // Extract condition
+                var comments = entry.gsx$comments.$t.trim(); // Extract comments
+                trailConditions[trailName] = {condition: condition, comments: comments};
+            });
 
-                    // Normalize GeoJSON to FeatureCollection
-                    let features = [];
-                    if (data.type === "FeatureCollection") {
-                        features = data.features;
-                    } else if (data.type === "Feature") {
-                        features = [data]; // Wrap single feature in an array
-                    } else {
-                        console.error('Invalid GeoJSON structure:', data);
-                        throw new Error('Unsupported GeoJSON type');
-                    }
+            // Function to create popups with the condition data
+            function onEachFeature(feature, layer) {
+                var trailName = feature.properties.Name;
+                if (trailConditions[trailName]) {
+                    var condition = trailConditions[trailName].condition;
+                    var comments = trailConditions[trailName].comments;
+                    layer.setStyle({ color: getColor(condition) });
+                    layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments);
+                }
+            }
 
-                    // Process each feature
-                    features.forEach(feature => {
-                        if (!feature.properties || !feature.properties.Name) {
-                            console.warn('Feature missing "Name" property:', feature);
-                            return;
-                        }
+            // Load and display the GeoJSON files
+            var geojsonFiles = [
+                {name: 'ChilkootWay.geojson', url: 'path_to_your_geojson/ChilkootWay.geojson'},
+                {name: 'LowerEscarpment.geojson', url: 'path_to_your_geojson/LowerEscarpment.geojson'},
+                {name: 'Riverfront.geojson', url: 'path_to_your_geojson/Riverfront.geojson'}
+            ];
 
-                        const trailName = feature.properties.Name;
-                        console.log('Processing feature:', trailName);
-
-                        // Find matching row in the sheet data
-                        const match = sheetData.find(row => row.Trail === trailName);
-                        if (match) {
-                            console.log('Match found for trail:', trailName, match);
-                            feature.properties.condition = match.Condition;
-                            feature.properties.comments = match.Comments;
-                        } else {
-                            console.warn(`No match found for trail: ${trailName}`);
-                        }
-                    });
-
-                    // Add the GeoJSON layer to the map
-                    L.geoJSON(features, {
-                        style: function(feature) {
-                            const condition = feature.properties.condition;
-                            return {
-                                color: condition == 5 ? "green" :
-                                       condition == 3 ? "yellow" :
-                                       condition == 2 ? "red" : "gray",
-                                weight: 4
-                            };
-                        },
-                        onEachFeature: function(feature, layer) {
-                            const popupContent = `
-                                <strong>${feature.properties.Name}</strong><br>
-                                Condition: ${feature.properties.condition || 'Unknown'}<br>
-                                Comments: ${feature.properties.comments || 'None'}
-                            `;
-                            layer.bindPopup(popupContent);
-                        }
+            geojsonFiles.forEach(function(file) {
+                $.getJSON(file.url, function(geojsonData) {
+                    L.geoJSON(geojsonData, {
+                        onEachFeature: onEachFeature
                     }).addTo(map);
-                })
-                .catch(error => console.error('Error loading GeoJSON:', error));
-        }
-
-        // Load both GeoJSON data and Google Sheets data
-        loadGoogleSheetData().then(sheetData => {
-            // Load GeoJSON files after sheet data is fetched
-            loadGeoJSON('ChilkootWay.geojson', sheetData);
-            loadGeoJSON('LowerEscarpment.geojson', sheetData);
-            loadGeoJSON('Riverfront.geojson', sheetData);
+                });
+            });
         });
     </script>
 </body>
