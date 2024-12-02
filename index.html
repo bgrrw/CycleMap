@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
     <div id="map" style="height: 600px;"></div>
@@ -32,42 +33,49 @@
             }
         }
 
-        // Fetch Google Sheets data using the published URL
-        $.getJSON('https://docs.google.com/spreadsheets/d/e/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/pubhtml?gid=0&single=true', function(data) {
-            // Map the Google Sheet rows into a key-value format for easy lookup
-            var trailConditions = {};
-            data.feed.entry.forEach(function(entry) {
-                var trailName = entry.gsx$trail.$t.trim(); // Extract trail name
-                var condition = parseInt(entry.gsx$condition.$t.trim()); // Extract condition
-                var comments = entry.gsx$comments.$t.trim(); // Extract comments
-                trailConditions[trailName] = {condition: condition, comments: comments};
-            });
+        // Fetch CSV data using PapaParse
+        var csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdbtilDhAQM77HRjymspR257EwZJ1U0i42JYVASWjhwk0WkPfTbnY0qOfkOSJ1ZqMUZVefQwmvIjpG/pub?gid=0&single=true&output=csv';
 
-            // Function to create popups with the condition data
-            function onEachFeature(feature, layer) {
-                var trailName = feature.properties.Name;
-                if (trailConditions[trailName]) {
-                    var condition = trailConditions[trailName].condition;
-                    var comments = trailConditions[trailName].comments;
-                    layer.setStyle({ color: getColor(condition) });
-                    layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments);
-                }
-            }
-
-            // Load and display the GeoJSON files
-            var geojsonFiles = [
-                {name: 'ChilkootWay.geojson', url: 'path_to_your_geojson/ChilkootWay.geojson'},
-                {name: 'LowerEscarpment.geojson', url: 'path_to_your_geojson/LowerEscarpment.geojson'},
-                {name: 'Riverfront.geojson', url: 'path_to_your_geojson/Riverfront.geojson'}
-            ];
-
-            geojsonFiles.forEach(function(file) {
-                $.getJSON(file.url, function(geojsonData) {
-                    L.geoJSON(geojsonData, {
-                        onEachFeature: onEachFeature
-                    }).addTo(map);
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                // Map the CSV rows into a key-value format for easy lookup
+                var trailConditions = {};
+                results.data.forEach(function(entry) {
+                    var trailName = entry.Trail.trim(); // Extract trail name
+                    var condition = parseInt(entry.Condition.trim()); // Extract condition
+                    var comments = entry.Comments.trim(); // Extract comments
+                    trailConditions[trailName] = {condition: condition, comments: comments};
                 });
-            });
+
+                // Function to create popups with the condition data
+                function onEachFeature(feature, layer) {
+                    var trailName = feature.properties.Name;
+                    if (trailConditions[trailName]) {
+                        var condition = trailConditions[trailName].condition;
+                        var comments = trailConditions[trailName].comments;
+                        layer.setStyle({ color: getColor(condition) });
+                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments);
+                    }
+                }
+
+                // Load and display the GeoJSON files
+                var geojsonFiles = [
+                    {name: 'ChilkootWay.geojson', url: 'https://example.com/path_to_your_geojson/ChilkootWay.geojson'},
+                    {name: 'LowerEscarpment.geojson', url: 'https://example.com/path_to_your_geojson/LowerEscarpment.geojson'},
+                    {name: 'Riverfront.geojson', url: 'https://example.com/path_to_your_geojson/Riverfront.geojson'}
+                ];
+
+                geojsonFiles.forEach(function(file) {
+                    $.getJSON(file.url, function(geojsonData) {
+                        L.geoJSON(geojsonData, {
+                            onEachFeature: onEachFeature
+                        }).addTo(map);
+                    });
+                });
+            }
         });
     </script>
 </body>
