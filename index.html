@@ -38,7 +38,7 @@
 
                     // Join GeoJSON features with Google Sheet data
                     data.features.forEach(feature => {
-                        const trailName = feature.properties.name;
+                        const trailName = feature.properties.Name; // Use "Name" from GeoJSON
                         const match = sheetData.find(row => row.Trail === trailName);
                         if (match) {
                             feature.properties.condition = match.Condition; // Add condition
@@ -61,7 +61,7 @@
                         onEachFeature: function(feature, layer) {
                             // Add a popup with trail details
                             const popupContent = `
-                                <strong>${feature.properties.name}</strong><br>
+                                <strong>${feature.properties.Name}</strong><br>
                                 Condition: ${feature.properties.condition || 'Unknown'}<br>
                                 Comments: ${feature.properties.comments || 'None'}
                             `;
