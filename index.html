@@ -31,28 +31,40 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
+                    // Validate GeoJSON structure
+                    if (!data || !data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid GeoJSON structure');
+                    }
+
                     // Join GeoJSON features with Google Sheet data
                     data.features.forEach(feature => {
-                        const name = feature.properties.name;
-                        const match = sheetData.find(row => row.name === name);
+                        const trailName = feature.properties.name;
+                        const match = sheetData.find(row => row.Trail === trailName);
                         if (match) {
-                            feature.properties.condition = match.condition; // Add the condition
+                            feature.properties.condition = match.Condition; // Add condition
+                            feature.properties.comments = match.Comments; // Add comments
                         }
                     });
 
                     // Add the GeoJSON layer to the map
                     L.geoJSON(data, {
                         style: function(feature) {
-                            // Style based on the condition attribute
+                            // Style based on the condition value
+                            const condition = feature.properties.condition;
                             return {
-                                color: feature.properties.condition === "Good" ? "green" :
-                                       feature.properties.condition === "Fair" ? "yellow" :
-                                       "red"
+                                color: condition == 5 ? "green" :
+                                       condition == 3 ? "yellow" :
+                                       condition == 2 ? "red" : "gray",
+                                weight: 4
                             };
                         },
                         onEachFeature: function(feature, layer) {
-                            // Add a popup with the name and condition
-                            const popupContent = `Name: ${feature.properties.name}<br>Condition: ${feature.properties.condition || 'Unknown'}`;
+                            // Add a popup with trail details
+                            const popupContent = `
+                                <strong>${feature.properties.name}</strong><br>
+                                Condition: ${feature.properties.condition || 'Unknown'}<br>
+                                Comments: ${feature.properties.comments || 'None'}
+                            `;
                             layer.bindPopup(popupContent);
                         }
                     }).addTo(map);
