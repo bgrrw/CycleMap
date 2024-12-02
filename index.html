@@ -47,7 +47,8 @@
                     var trailName = entry.Trail.trim(); // Extract trail name
                     var condition = parseInt(entry.Condition.trim()); // Extract condition
                     var comments = entry.Comments.trim(); // Extract comments
-                    trailConditions[trailName] = {condition: condition, comments: comments};
+                    var lastUpdate = entry.Update.trim(); // Extract Last update
+                    trailConditions[trailName] = {condition: condition, comments: comments, update: lastUpdate};
                 });
 
                 // Function to create popups with the condition data
@@ -56,8 +57,9 @@
                     if (trailConditions[trailName]) {
                         var condition = trailConditions[trailName].condition;
                         var comments = trailConditions[trailName].comments;
+                        var lastUpdate = trailConditions[trailName].update;
                         layer.setStyle({ color: getColor(condition) });
-                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments);
+                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments+ '<br>Last Updated: ' + lastUpdate);
                     }
                 }
 
