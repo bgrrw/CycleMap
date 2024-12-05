@@ -11,10 +11,21 @@
 
     <Style>
         #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+        #title-pane {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          text-align: center;
+          z-index: 400;
+          font-family: Arial, sans-serif;
+          font-size: 20px;
+          color: black;
+        }
     </Style>
 </head>
 <body>
     <div id="map"></div>
+    <div id="title-pane"><p>Cycle Trail Conditions</p></div>
 
     <script>
         // Initialize the map
