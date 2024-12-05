@@ -116,8 +116,24 @@
                         var condition = trailConditions[trailName].condition;
                         var comments = trailConditions[trailName].comments;
                         var lastUpdate = trailConditions[trailName].update;
-                        layer.setStyle({ color: getColor(condition)});  // Increased weight for easier clickability
+                        layer.setStyle({     
+                            color: getColor(condition),
+                            weight: 20,  // Set line width to 10
+                            opacity: 0,  // Set transparency to fully transparent
+                        });  // Increased weight for easier clickability
                         layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments + '<br>Last Updated: ' + lastUpdate);
+                    }
+                }
+
+                // Function to create popups with the condition data
+                function onEachFeature2(feature, layer) {
+                    var trailName = feature.properties.Name;
+                    if (trailConditions[trailName]) {
+                        var condition = trailConditions[trailName].condition;
+                        var comments = trailConditions[trailName].comments;
+                        var lastUpdate = trailConditions[trailName].update;
+                        layer.setStyle({ color: getColor(condition)});  // Increased weight for easier clickability
+                        //layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments + '<br>Last Updated: ' + lastUpdate);
                     }
                 }
 
@@ -127,6 +143,13 @@
                 $.getJSON(geojsonUrl, function(geojsonData) {
                     L.geoJSON(geojsonData, {
                         onEachFeature: onEachFeature
+                    }).addTo(map);
+                });
+
+                var geojsonUrl2 = 'Multi-Use_Trails.geojson';
+                $.getJSON(geojsonUrl2, function(geojsonData) {
+                    L.geoJSON(geojsonData, {
+                        onEachFeature: onEachFeature2
                     }).addTo(map);
                 });
             }
