@@ -9,7 +9,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
-    <Style>
+    <style>
         #map { position: absolute; top:0; bottom:0; right:0; left:0; }
         #title-pane {
           position: absolute;
@@ -37,15 +37,17 @@
             margin-right: 5px;
             border-radius: 50%;
         }
-    </Style>
+    </style>
 </head>
 <body>
     <div id="map"></div>
     <div id="title-pane"><p>Cycle Trail Conditions</p></div>
 
     <script>
-        // Initialize the map
-        var map = L.map('map').setView([60.714, -135.068], 13);  // Adjust view to your region
+        // Initialize the map with clickTolerance to improve mobile interaction
+        var map = L.map('map', {
+            clickTolerance: 10 // Increase the tolerance for touch interaction
+        }).setView([60.714, -135.068], 13);  // Adjust view to your region
 
         // Set the OpenStreetMap basemap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -76,7 +78,6 @@
         };
 
         legend.addTo(map);
-        
         
         // Function to assign color based on condition value
         function getColor(condition) {
@@ -115,13 +116,13 @@
                         var condition = trailConditions[trailName].condition;
                         var comments = trailConditions[trailName].comments;
                         var lastUpdate = trailConditions[trailName].update;
-                        layer.setStyle({ color: getColor(condition) });
-                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments+ '<br>Last Updated: ' + lastUpdate);
+                        layer.setStyle({ color: getColor(condition), weight: 6 });  // Increased weight for easier clickability
+                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments + '<br>Last Updated: ' + lastUpdate);
                     }
                 }
 
                 // Load and display the GeoJSON files
-               var geojsonUrl = 'Multi-Use_Trails.geojson';
+                var geojsonUrl = 'Multi-Use_Trails.geojson';
 
                 $.getJSON(geojsonUrl, function(geojsonData) {
                     L.geoJSON(geojsonData, {
