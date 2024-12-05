@@ -68,27 +68,12 @@
                 }
 
                 // Load and display the GeoJSON files
-                var geojsonFiles = [
-                    {name: 'Airport Trail.geojson', url: 'Airport Trail.geojson'},
-                    {name: 'Alaska Hwy_Range Road Trail.geojson', url: 'Alaska Hwy_Range Road Trail.geojson'},
-                    {name: 'ChilkootWay.geojson', url: 'ChilkootWay.geojson'},
-                    {name: 'Elijah Smith School to Hillcrest connector.geojson', url: 'Elijah Smith School to Hillcrest connector.geojson'},
-                    {name: 'Hamilton Blvd Trail to Copper Ridge.geojson', url: 'Hamilton Blvd Trail to Copper Ridge.geojson'},
-                    {name: 'Hamilton Blvd Trail to Dog Parking Lot.geojson', url: 'Hamilton Blvd Trail to Dog Parking Lot.geojson'},
-                    {name: 'Lewes Blvd Trail.geojson', url: 'Lewes Blvd Trail.geojson'},
-                    {name: 'LowerEscarpment.geojson', url: 'LowerEscarpment.geojson'},
-                    {name: 'Millennium Loop.geojson', url: 'Millennium Loop.geojson'},
-                    {name: 'Pine Street to Takhini connector.geojson', url: 'Pine Street to Takhini connector.geojson'},
-                    {name: 'Riverfront.geojson', url: 'Riverfront.geojson'},
-                    {name: 'TwoMile.geojson', url: 'TwoMile.geojson'}
-                ];
+               var geojsonUrl = 'Multi-Use_Trails.geojson';
 
-                geojsonFiles.forEach(function(file) {
-                    $.getJSON(file.url, function(geojsonData) {
-                        L.geoJSON(geojsonData, {
-                            onEachFeature: onEachFeature
-                        }).addTo(map);
-                    });
+                $.getJSON(geojsonUrl, function(geojsonData) {
+                    L.geoJSON(geojsonData, {
+                        onEachFeature: onEachFeature
+                    }).addTo(map);
                 });
             }
         });
