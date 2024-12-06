@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cycle Trail Conditions</title>
+    <title>Winter Cycle Commuter Route Trail Condition</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -55,11 +55,11 @@
         }).addTo(map);
 
         var conditions = {
-            "Poor": "red",  
-            "Fair": "orange",   
-            "Good": "yellow",   
-            "Very Good": "lightgreen", 
-            "Excellent": "green" 
+            "Completely impassible": "red",  
+            "Passable with difficulty": "orange",   
+            "Passable, but not pleasant": "yellow",   
+            "Passable by conventional bicycle, but could be better": "lightgreen", 
+            "Perfect: usable by people of All Ages and Abilities": "green" 
         };
         
         // Create a custom legend control
