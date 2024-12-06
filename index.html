@@ -106,7 +106,7 @@
                     var condition = parseInt(entry.Condition.trim()); // Extract condition
                     var comments = entry.Comments.trim(); // Extract comments
                     var lastUpdate = entry.Update.trim(); // Extract Last update
-                    var dateTime = entry.Date_Time.trum(); // Extract Observed dat and time
+                    var dateTime = entry.Date_Time.trim(); // Extract Observed dat and time
                     trailConditions[trailName] = {condition: condition, comments: comments, update: lastUpdate, dateTime: dateTime};
                 });
 
