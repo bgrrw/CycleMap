@@ -131,6 +131,7 @@
                 function onEachFeature2(feature, layer) {
                     var trailName = feature.properties.Name;
                     if (trailConditions[trailName]) {
+                        var condition = trailConditions[trailName].condition;
                         layer.setStyle({ color: getColor(condition)});  // Increased weight for easier clickability
                     }
                 }
