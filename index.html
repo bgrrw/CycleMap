@@ -106,7 +106,8 @@
                     var condition = parseInt(entry.Condition.trim()); // Extract condition
                     var comments = entry.Comments.trim(); // Extract comments
                     var lastUpdate = entry.Update.trim(); // Extract Last update
-                    trailConditions[trailName] = {condition: condition, comments: comments, update: lastUpdate};
+                    var dateTime = entry.Date_Time.trum(); // Extract Observed dat and time
+                    trailConditions[trailName] = {condition: condition, comments: comments, update: lastUpdate, dateTime: dateTime};
                 });
 
                 // Function to create popups with the condition data
@@ -116,12 +117,13 @@
                         var condition = trailConditions[trailName].condition;
                         var comments = trailConditions[trailName].comments;
                         var lastUpdate = trailConditions[trailName].update;
+                        var dateTime = trailConditions[trailName].dateTime;
                         layer.setStyle({     
                             color: getColor(condition),
                             weight: 20,  // Set line width to 10
                             opacity: 0,  // Set transparency to fully transparent
                         });  // Increased weight for easier clickability
-                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments + '<br>Last Updated: ' + lastUpdate);
+                        layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments + '<br>Date and Time of Observation: ' + dateTime);
                     }
                 }
 
@@ -129,11 +131,7 @@
                 function onEachFeature2(feature, layer) {
                     var trailName = feature.properties.Name;
                     if (trailConditions[trailName]) {
-                        var condition = trailConditions[trailName].condition;
-                        var comments = trailConditions[trailName].comments;
-                        var lastUpdate = trailConditions[trailName].update;
                         layer.setStyle({ color: getColor(condition)});  // Increased weight for easier clickability
-                        //layer.bindPopup('<strong>' + trailName + '</strong><br>Condition: ' + condition + '<br>Comments: ' + comments + '<br>Last Updated: ' + lastUpdate);
                     }
                 }
 
